@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brainstorming: Whole Health</title>
+<style>
+  :root{
+    --ink:#1c2430; --muted:#5a6572; --accent:#0b5cad; --accent-dark:#084a8a;
+    --card:#ffffff; --bg:#eef2f6; --line:#d4dce4; --soft:#f4f8fc;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.45;}
+  .wrap{max-width:860px;margin:0 auto;padding:16px 14px 48px;}
+  header{margin:10px 0 6px;}
+  h1{font-size:1.7rem;margin:0 0 2px;}
+  h2{font-size:1.25rem;margin:0 0 4px;}
+  .subtitle{color:var(--muted);font-size:1rem;margin:0 0 10px;}
+  .intro{font-size:1.02rem;margin:0 0 4px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px;margin:14px 0;box-shadow:0 1px 3px rgba(20,40,60,.06);}
+  .starter{color:var(--muted);margin:0 0 12px;}
+  .idearow{display:flex;gap:8px;align-items:center;margin:8px 0;}
+  .idearow input[type=text]{flex:1 1 auto;min-width:0;padding:9px 10px;font:inherit;font-size:1rem;
+    border:1px solid var(--line);border-radius:8px;min-height:44px;}
+  button{cursor:pointer;font:inherit;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    padding:9px 16px;border-radius:8px;min-height:44px;font-weight:600;}
+  button:hover{background:var(--accent-dark);}
+  button.secondary{background:#fff;color:var(--accent);}
+  button.secondary:hover{background:var(--soft);}
+  button.remove{background:#fff;color:#b3261e;border-color:#d8a49f;padding:9px 12px;flex:0 0 auto;}
+  button.remove:hover{background:#fdf2f1;}
+  button:disabled{opacity:.5;cursor:default;}
+  button:focus-visible,input:focus-visible{outline:3px solid #f2b01e;outline-offset:2px;}
+  .addrow{margin-top:10px;}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0;}
+  .summary h2{margin-top:0;}
+  .summary h3{margin:16px 0 4px;font-size:1.05rem;}
+  .summary ul{margin:4px 0 0;padding-left:22px;}
+  .summary li{margin:3px 0;}
+  .empty-note{color:var(--muted);font-style:italic;}
+  .copied{color:var(--accent-dark);font-weight:600;min-height:1.3em;margin:10px 0 0;}
+  .hidden{display:none !important;}
+  @media (max-width:560px){
+    h1{font-size:1.4rem;}
+    button.remove span.word{display:none;}
+  }
+  @media print{
+    body{background:#fff;}
+    .no-print{display:none !important;}
+    .card{box-shadow:none;border-color:#999;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Brainstorming: Whole Health</h1>
+    <p class="subtitle">Grade 8 STEAM, Lesson 1: Whole Health</p>
+    <p class="intro">This is a brainstorm, so there are no right or wrong answers. Get your ideas down first. You will use them again when you set your health goal.</p>
+  </header>
+
+  <main id="board">
+    <section class="card" data-section aria-labelledby="h-s1">
+      <h2 id="h-s1">What does being healthy mean to you?</h2>
+      <p class="starter">Think about your body, your mind, your feelings, and your connections with other people.</p>
+      <div class="ideas"></div>
+      <div class="addrow no-print">
+        <button type="button" class="secondary add-btn">Add another idea</button>
+      </div>
+    </section>
+
+    <section class="card" data-section aria-labelledby="h-s2">
+      <h2 id="h-s2">Choices that can help my health</h2>
+      <p class="starter">Big or small, what choices make a difference?</p>
+      <div class="ideas"></div>
+      <div class="addrow no-print">
+        <button type="button" class="secondary add-btn">Add another idea</button>
+      </div>
+    </section>
+
+    <section class="card" data-section aria-labelledby="h-s3">
+      <h2 id="h-s3">Choices that can hurt my health</h2>
+      <p class="starter">Be honest. Everyone has some of these.</p>
+      <div class="ideas"></div>
+      <div class="addrow no-print">
+        <button type="button" class="secondary add-btn">Add another idea</button>
+      </div>
+    </section>
+
+    <div class="actions no-print">
+      <button type="button" id="finishBtn">See my brainstorm</button>
+    </div>
+  </main>
+
+  <section class="card summary hidden" id="summary" aria-labelledby="h-summary">
+    <h2 id="h-summary">My Whole Health Brainstorm</h2>
+    <p class="subtitle">Grade 8 STEAM, Lesson 1: Whole Health</p>
+    <div id="summaryBody"></div>
+    <div class="actions no-print">
+      <button type="button" id="printBtn">Print</button>
+      <button type="button" class="secondary" id="copyBtn">Copy</button>
+      <button type="button" class="secondary" id="backBtn">Back to my brainstorm</button>
+    </div>
+    <p class="copied" id="copyNote" role="status" aria-live="polite"></p>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var sections = Array.prototype.slice.call(document.querySelectorAll("[data-section]"));
+
+  function makeRow(sectionEl) {
+    var row = document.createElement("div");
+    row.className = "idearow";
+    var title = sectionEl.querySelector("h2").textContent;
+    var input = document.createElement("input");
+    input.type = "text";
+    input.setAttribute("aria-label", "Idea for: " + title);
+    input.placeholder = "Type an idea...";
+    var remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "remove";
+    remove.innerHTML = "&#10005;<span class=\"word\"> Remove</span>";
+    remove.setAttribute("aria-label", "Remove this idea");
+    remove.addEventListener("click", function () {
+      var rows = sectionEl.querySelectorAll(".idearow");
+      if (rows.length <= 1) { return; }
+      row.remove();
+      refreshRemoveButtons(sectionEl);
+    });
+    row.appendChild(input);
+    row.appendChild(remove);
+    return row;
+  }
+
+  function refreshRemoveButtons(sectionEl) {
+    var rows = sectionEl.querySelectorAll(".idearow");
+    var single = rows.length <= 1;
+    Array.prototype.forEach.call(sectionEl.querySelectorAll(".remove"), function (btn) {
+      btn.disabled = single;
+    });
+  }
+
+  sections.forEach(function (sectionEl) {
+    var ideas = sectionEl.querySelector(".ideas");
+    ideas.appendChild(makeRow(sectionEl));
+    ideas.appendChild(makeRow(sectionEl));
+    ideas.appendChild(makeRow(sectionEl));
+    refreshRemoveButtons(sectionEl);
+    sectionEl.querySelector(".add-btn").addEventListener("click", function () {
+      var row = makeRow(sectionEl);
+      ideas.appendChild(row);
+      refreshRemoveButtons(sectionEl);
+      row.querySelector("input").focus();
+    });
+  });
+
+  function collectIdeas() {
+    return sections.map(function (sectionEl) {
+      var ideas = [];
+      Array.prototype.forEach.call(sectionEl.querySelectorAll(".idearow input"), function (input) {
+        var v = input.value.trim();
+        if (v) { ideas.push(v); }
+      });
+      return { title: sectionEl.querySelector("h2").textContent, ideas: ideas };
+    });
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+  }
+
+  function compileSummaryHtml(data) {
+    var html = "";
+    data.forEach(function (group) {
+      html += "<h3>" + escapeHtml(group.title) + "</h3>";
+      if (group.ideas.length) {
+        html += "<ul>";
+        group.ideas.forEach(function (idea) { html += "<li>" + escapeHtml(idea) + "</li>"; });
+        html += "</ul>";
+      } else {
+        html += "<p class=\"empty-note\">No ideas added yet.</p>";
+      }
+    });
+    return html;
+  }
+
+  function compileSummaryText(data) {
+    var lines = ["My Whole Health Brainstorm", "Grade 8 STEAM, Lesson 1: Whole Health", ""];
+    data.forEach(function (group) {
+      lines.push(group.title);
+      if (group.ideas.length) {
+        group.ideas.forEach(function (idea) { lines.push("- " + idea); });
+      } else {
+        lines.push("(No ideas added yet.)");
+      }
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+
+  var board = document.getElementById("board");
+  var summary = document.getElementById("summary");
+  var summaryBody = document.getElementById("summaryBody");
+  var copyNote = document.getElementById("copyNote");
+  var lastData = null;
+
+  document.getElementById("finishBtn").addEventListener("click", function () {
+    lastData = collectIdeas();
+    summaryBody.innerHTML = compileSummaryHtml(lastData);
+    copyNote.textContent = "";
+    board.classList.add("hidden");
+    summary.classList.remove("hidden");
+    document.getElementById("printBtn").focus();
+    window.scrollTo(0, 0);
+  });
+
+  document.getElementById("backBtn").addEventListener("click", function () {
+    summary.classList.add("hidden");
+    board.classList.remove("hidden");
+    document.getElementById("finishBtn").focus();
+    window.scrollTo(0, 0);
+  });
+
+  document.getElementById("printBtn").addEventListener("click", function () {
+    window.print();
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var text = compileSummaryText(lastData || collectIdeas());
+    function done(ok) {
+      copyNote.textContent = ok ? "Copied. You can paste your brainstorm wherever you keep your work."
+                                : "Copy did not work in this browser. You can print instead.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { fallback(); });
+    } else {
+      fallback();
+    }
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      ta.remove();
+      done(ok);
+    }
+  });
+})();
+</script>
+</body>
+</html>
